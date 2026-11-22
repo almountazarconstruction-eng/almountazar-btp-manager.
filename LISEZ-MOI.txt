@@ -1,0 +1,19 @@
+ALMOUNTAZAR BTP MANAGER — paquet de déploiement
+
+Contenu : index.html (application web)
+
+Déploiement manuel recommandé (Netlify Drop) :
+1. Ouvrir https://app.netlify.com/drop dans Safari ou sur un ordinateur.
+2. Se connecter ou créer un compte Netlify.
+3. Décompresser le fichier ZIP sur un ordinateur (ou transférer le dossier décompressé).
+4. Déposer le dossier contenant directement index.html dans la zone de dépôt Netlify.
+5. Netlify fournit une URL publique en *.netlify.app.
+6. Dans Supabase > Authentication > URL Configuration :
+   - Site URL : remplacer par l'URL Netlify fournie.
+   - Redirect URLs : ajouter cette même URL et son chemin /* si l'interface le permet.
+
+IMPORTANT :
+- Ce paquet n'est pas encore publié sur Internet. La publication nécessite une action dans le compte d'hébergement du propriétaire.
+- Ne jamais communiquer la clé secret/service_role. L'application utilise uniquement la clé publishable.
+- Après publication, tester la connexion avec le compte administrateur et vérifier les règles RLS.
+- La fonction de réinitialisation du mot de passe doit être testée après configuration des URL de redirection Supabase.
