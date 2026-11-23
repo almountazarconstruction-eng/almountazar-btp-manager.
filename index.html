@@ -8,36 +8,46 @@
 <form id="loginForm"><label>Adresse e-mail</label><input id="email" type="email" value="almountazarconstruction@gmail.com" required><label>Mot de passe</label><input id="password" type="password" autocomplete="current-password" required><button class="btn primary" id="loginBtn" style="width:100%">Se connecter</button></form>
 <p><button class="btn" id="forgot" type="button">Mot de passe oublié ?</button></p>
 <div id="resetPanel" hidden><hr><h3>Nouveau mot de passe</h3><form id="resetForm"><label>Nouveau mot de passe</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required><label>Confirmer le mot de passe</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required><button class="btn primary" id="resetBtn" style="width:100%">Enregistrer le nouveau mot de passe</button></form></div>
-<p id="loginMsg" class="muted" role="status" aria-live="polite"></p><div class="notice">Accès réservé au compte administrateur autorisé dans Supabase.</div>
+<p id="loginMsg" class="muted" role="status" aria-live="polite"></p><div class="notice">Accès réservé au compte administrateur autorisé dans Firebase.</div>
 </div></div>
 <div id="appShell" hidden><header><div class="brand"><b>ALMOUNTAZAR CONSTRUCTION</b><small>BTP MANAGER · FCFA</small></div><div><span id="userLabel" class="status"></span> <button class="btn" id="logout">Déconnexion</button></div></header><div class="layout"><aside id="nav"></aside><main id="main"></main></div></div>
 <div class="modal" id="modal"><div class="dialog"><h2 id="modalTitle">Ajouter</h2><form id="recordForm"><div class="fields" id="fields"></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px"><button type="button" class="btn" id="cancel">Annuler</button><button class="btn primary">Enregistrer</button></div></form></div></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const SUPABASE_URL='https://adatfwovykwgfpnsbbdu.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY='sb_publishable_Aw1Xv3R-Zq4YCnao3PidcQ_eWUyx7sW';
-const APP_URL='https://almountazarconstruction-eng.github.io/almountazar-btp-manager./';
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBSnwitDLuAs9lmRNXkT4t-qjYkIg5PiZs",
+  authDomain: "almountazar-metre-pro.firebaseapp.com",
+  projectId: "almountazar-metre-pro",
+  storageBucket: "almountazar-metre-pro.firebasestorage.app",
+  messagingSenderId: "310048186815",
+  appId: "1:310048186815:web:e8b44babebadbedff7c10a"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 const ADMIN_EMAIL='almountazarconstruction@gmail.com';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const schema={
-clients:{label:'Clients',table:'clients',fields:[['nom','Nom / raison sociale','text',1],['telephone','Téléphone','text'],['email','E-mail','email'],['adresse','Adresse','text']]},
-chantiers:{label:'Chantiers',table:'chantiers',fields:[['nom','Nom du chantier','text',1],['client_id','Client','ref:clients',1],['adresse','Adresse / lieu','text'],['date_debut','Date de début','date'],['date_fin_prevue','Fin prévue','date'],['budget','Budget (FCFA)','number'],['statut','Statut','select:En préparation|En cours|En pause|Terminé|Réceptionné']]},
-devis:{label:'Devis & marchés',table:'devis',fields:[['numero','Numéro du devis','text',1],['client_id','Client','ref:clients'],['chantier_id','Chantier','ref:chantiers'],['date_devis','Date','date'],['montant_ht','Montant HT (FCFA)','number'],['montant_ttc','Montant TTC (FCFA)','number'],['statut','Statut','select:En attente|Accepté|Refusé|Facturé']]},
-encaissements:{label:'Encaissements',table:'encaissements',fields:[['chantier_id','Chantier','ref:chantiers'],['client_id','Client','ref:clients'],['date_paiement','Date','date'],['montant','Montant reçu (FCFA)','number',1],['mode_paiement','Mode de paiement','select:Espèces|Wave|Orange Money|Virement|Chèque|Autre'],['reference','Référence','text'],['observation','Observation','text']]},
-depenses:{label:'Dépenses',table:'depenses',fields:[['chantier_id','Chantier','ref:chantiers'],['date_depense','Date','date'],['categorie','Catégorie','select:Matériaux|Main-d’œuvre|Transport|Location matériel|Sous-traitance|Carburant|Frais administratifs|Autres'],['designation','Désignation','text',1],['montant','Montant (FCFA)','number',1],['beneficiaire','Fournisseur / bénéficiaire','text'],['justificatif','N° pièce / facture','text']]},
-personnel:{label:'Personnel',table:'personnel',fields:[['nom','Nom et prénom','text',1],['fonction','Fonction','text'],['telephone','Téléphone','text'],['type_contrat','Type de contrat','text'],['salaire_journalier','Tarif journalier (FCFA)','number'],['statut','Statut','select:Actif|Inactif']]},
-avances_equipe:{label:'Avances équipe',table:'avances_equipe',fields:[['personnel_id','Personnel','ref:personnel'],['chantier_id','Chantier','ref:chantiers'],['date_avance','Date','date'],['montant','Montant remis (FCFA)','number',1],['motif','Motif','text']]},
-stock_articles:{label:'Articles de stock',table:'stock_articles',fields:[['reference','Référence','text'],['designation','Désignation','text',1],['unite','Unité','text'],['stock_minimum','Stock minimum','number']]},
-stock_mouvements:{label:'Mouvements de stock',table:'stock_mouvements',fields:[['article_id','Article','ref:stock_articles',1],['chantier_id','Chantier','ref:chantiers'],['date_mouvement','Date','date'],['type_mouvement','Type','select:Entree|Sortie',1],['quantite','Quantité','number',1],['prix_unitaire','Prix unitaire (FCFA)','number'],['observation','Observation','text']]},
-main_oeuvre:{label:'Main-d’œuvre',table:'main_oeuvre',fields:[['personnel_id','Personnel','ref:personnel'],['chantier_id','Chantier','ref:chantiers'],['date_travail','Date','date'],['nombre_jours','Nombre de jours','number',1],['tarif_journalier','Tarif journalier (FCFA)','number',1],['montant','Montant payé / dû (FCFA)','number'],['observation','Observation','text']]},
-devis_lignes:{label:'Lignes de devis',table:'devis_lignes',fields:[['devis_id','Devis','ref:devis',1],['designation','Désignation','text',1],['unite','Unité','text'],['quantite','Quantité','number'],['prix_unitaire','Prix unitaire (FCFA)','number'],['montant','Montant (FCFA)','number']]}
+ clients:{label:'Clients',fields:[['nom','Nom / raison sociale','text',1],['telephone','Téléphone','text'],['email','E-mail','email'],['adresse','Adresse','text']]},
+ chantiers:{label:'Chantiers',fields:[['nom','Nom du chantier','text',1],['client_id','Client','ref:clients',1],['adresse','Adresse / lieu','text'],['date_debut','Date de début','date'],['date_fin_prevue','Fin prévue','date'],['budget','Budget (FCFA)','number'],['statut','Statut','select:En préparation|En cours|En pause|Terminé|Réceptionné']]},
+ devis:{label:'Devis & marchés',fields:[['numero','Numéro du devis','text',1],['client_id','Client','ref:clients'],['chantier_id','Chantier','ref:chantiers'],['date_devis','Date','date'],['montant_ht','Montant HT (FCFA)','number'],['montant_ttc','Montant TTC (FCFA)','number'],['statut','Statut','select:En attente|Accepté|Refusé|Facturé']]},
+ encaissements:{label:'Encaissements',fields:[['chantier_id','Chantier','ref:chantiers'],['client_id','Client','ref:clients'],['date_paiement','Date','date'],['montant','Montant reçu (FCFA)','number',1],['mode_paiement','Mode de paiement','select:Espèces|Wave|Orange Money|Virement|Chèque|Autre'],['reference','Référence','text'],['observation','Observation','text']]},
+ depenses:{label:'Dépenses',fields:[['chantier_id','Chantier','ref:chantiers'],['date_depense','Date','date'],['categorie','Catégorie','select:Matériaux|Main-d’œuvre|Transport|Location matériel|Sous-traitance|Carburant|Frais administratifs|Autres'],['designation','Désignation','text',1],['montant','Montant (FCFA)','number',1],['beneficiaire','Fournisseur / bénéficiaire','text'],['justificatif','N° pièce / facture','text']]},
+ personnel:{label:'Personnel',fields:[['nom','Nom et prénom','text',1],['fonction','Fonction','text'],['telephone','Téléphone','text'],['type_contrat','Type de contrat','text'],['salaire_journalier','Tarif journalier (FCFA)','number'],['statut','Statut','select:Actif|Inactif']]},
+ avances_equipe:{label:'Avances équipe',fields:[['personnel_id','Personnel','ref:personnel'],['chantier_id','Chantier','ref:chantiers'],['date_avance','Date','date'],['montant','Montant remis (FCFA)','number',1],['motif','Motif','text']]},
+ stock_articles:{label:'Articles de stock',fields:[['reference','Référence','text'],['designation','Désignation','text',1],['unite','Unité','text'],['stock_minimum','Stock minimum','number']]},
+ stock_mouvements:{label:'Mouvements de stock',fields:[['article_id','Article','ref:stock_articles',1],['chantier_id','Chantier','ref:chantiers'],['date_mouvement','Date','date'],['type_mouvement','Type','select:Entree|Sortie',1],['quantite','Quantité','number',1],['prix_unitaire','Prix unitaire (FCFA)','number'],['observation','Observation','text']]},
+ main_oeuvre:{label:'Main-d’œuvre',fields:[['personnel_id','Personnel','ref:personnel'],['chantier_id','Chantier','ref:chantiers'],['date_travail','Date','date'],['nombre_jours','Nombre de jours','number',1],['tarif_journalier','Tarif journalier (FCFA)','number',1],['montant','Montant payé / dû (FCFA)','number'],['observation','Observation','text']]},
+ devis_lignes:{label:'Lignes de devis',fields:[['devis_id','Devis','ref:devis',1],['designation','Désignation','text',1],['unite','Unité','text'],['quantite','Quantité','number'],['prix_unitaire','Prix unitaire (FCFA)','number'],['montant','Montant (FCFA)','number']]}
 };
 const order=['chantiers','clients','devis','devis_lignes','encaissements','depenses','personnel','avances_equipe','stock_articles','stock_mouvements','main_oeuvre'];let cache={},current='dashboard',editing=null;
 const $=id=>document.getElementById(id);const money=n=>(Number(n)||0).toLocaleString('fr-FR',{maximumFractionDigits:0})+' FCFA';const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function loadAll(){for(const k of order){let q=sb.from(schema[k].table).select('*');if(k!=='devis_lignes')q=q.order('created_at',{ascending:false});const {data,error}=await q;if(error)throw error;cache[k]=data||[]}}
+async function loadAll(){for(const k of order){const snap=await db.collection(k).get();cache[k]=snap.docs.map(d=>({id:d.id,...d.data()}));cache[k].sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));}}
 function showApp(user){$('login').hidden=true;$('appShell').hidden=false;$('userLabel').textContent=user.email||'';buildNav();refresh()}
 function buildNav(){$('nav').innerHTML='<button class="nav" data-k="dashboard">▦ Tableau de bord</button>'+order.map(k=>`<button class="nav" data-k="${k}">${schema[k].label}</button>`).join('');$('nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{current=b.dataset.k;refresh()})}
 function refresh(){document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.k===current));if(current==='dashboard')dashboard();else listPage(current)}
-function dashboard(){let enc=(cache.encaissements||[]).reduce((s,x)=>s+(+x.montant||0),0),dep=(cache.depenses||[]).reduce((s,x)=>s+(+x.montant||0),0),bud=(cache.chantiers||[]).reduce((s,x)=>s+(+x.budget||0),0);$('main').innerHTML=`<div class="head"><div><h1>Tableau de bord</h1><span class="muted">Données synchronisées avec Supabase · FCFA</span></div><button class="btn" onclick="refreshData()">Actualiser</button></div><div class="grid">${metric('Chantiers',cache.chantiers.length)}${metric('Clients',cache.clients.length)}${metric('Budget total',money(bud))}${metric('Encaissements',money(enc))}${metric('Dépenses',money(dep))}${metric('Trésorerie théorique',money(enc-dep))}${metric('Devis',cache.devis.length)}${metric('Personnel',cache.personnel.length)}</div><div class="notice">Les données affichées proviennent de votre base Supabase. Les accès sont contrôlés par les règles RLS du projet.</div><h3>Chantiers récents</h3>${tableHTML('chantiers')}`}
+function dashboard(){let enc=(cache.encaissements||[]).reduce((s,x)=>s+(+x.montant||0),0),dep=(cache.depenses||[]).reduce((s,x)=>s+(+x.montant||0),0),bud=(cache.chantiers||[]).reduce((s,x)=>s+(+x.budget||0),0);$('main').innerHTML=`<div class="head"><div><h1>Tableau de bord</h1><span class="muted">Données synchronisées avec Firebase · FCFA</span></div><button class="btn" onclick="refreshData()">Actualiser</button></div><div class="grid">${metric('Chantiers',cache.chantiers.length)}${metric('Clients',cache.clients.length)}${metric('Budget total',money(bud))}${metric('Encaissements',money(enc))}${metric('Dépenses',money(dep))}${metric('Trésorerie théorique',money(enc-dep))}${metric('Devis',cache.devis.length)}${metric('Personnel',cache.personnel.length)}</div><div class="notice">Les données affichées proviennent de votre base Firestore. L’accès est contrôlé par les règles de sécurité Firebase.</div><h3>Chantiers récents</h3>${tableHTML('chantiers')}`}
 function metric(t,v){return `<div class="card"><small class="muted">${t}</small><strong style="display:block;color:#173d2b;font-size:20px;margin-top:6px">${v}</strong></div>`}
 function refLabel(field,id){let k=field.slice(4),row=(cache[k]||[]).find(x=>x.id===id);return row?(row.nom||row.designation||row.numero||row.reference||id):'—'}
 function displayVal(k,row,f){let v=row[f[0]];if(f[2].startsWith('ref:'))return refLabel(f[2],v);if(f[2]==='number')return f[1].includes('FCFA')?money(v):(v??'—');return v??'—'}
@@ -47,71 +57,14 @@ function filterTable(q){$('tableArea').querySelectorAll('tbody tr').forEach(r=>r
 function openRecord(k,id=null){editing={k,id};let row=id?(cache[k]||[]).find(x=>x.id===id):{};$('modalTitle').textContent=(id?'Modifier : ':'Ajouter : ')+schema[k].label;$('fields').innerHTML=schema[k].fields.map(f=>fieldHTML(f,row)).join('');$('modal').classList.add('open')}
 function editRecord(k,id){openRecord(k,id)}
 function fieldHTML(f,row){let [key,label,type,required]=f,v=row?.[key]??'';let req=required?'required':'';if(type.startsWith('ref:')){let k=type.slice(4);return `<div class="field"><label>${label}</label><select name="${key}" ${req}><option value="">Sélectionner…</option>${(cache[k]||[]).map(r=>{let txt=r.nom||r.designation||r.numero||r.reference||r.id;return `<option value="${r.id}" ${v===r.id?'selected':''}>${esc(txt)}</option>`}).join('')}</select></div>`}if(type.startsWith('select:'))return `<div class="field"><label>${label}</label><select name="${key}" ${req}><option value="">Sélectionner…</option>${type.slice(7).split('|').map(x=>`<option ${v===x?'selected':''}>${x}</option>`).join('')}</select></div>`;return `<div class="field"><label>${label}</label><input name="${key}" type="${type}" value="${esc(v)}" ${req} ${type==='number'?'step="any" min="0"':''}></div>`}
-$('recordForm').onsubmit=async e=>{e.preventDefault();let {k,id}=editing,fd=new FormData(e.target),payload={};for(let f of schema[k].fields){let v=fd.get(f[0]);payload[f[0]]=f[2]==='number'?(v===''?0:Number(v)):(v||null)}try{let q=id?sb.from(schema[k].table).update(payload).eq('id',id):sb.from(schema[k].table).insert(payload);let {error}=await q;if(error)throw error;$('modal').classList.remove('open');await refreshData()}catch(err){alert('Enregistrement impossible : '+err.message)}};
-async function deleteRecord(k,id){if(!confirm('Supprimer définitivement cet enregistrement ?'))return;try{let {error}=await sb.from(schema[k].table).delete().eq('id',id);if(error)throw error;await refreshData()}catch(e){alert('Suppression impossible : '+e.message)}}
-async function refreshData(){try{await loadAll();refresh()}catch(e){alert('Erreur de synchronisation : '+e.message)}}
+$('recordForm').onsubmit=async e=>{e.preventDefault();let {k,id}=editing,fd=new FormData(e.target),payload={};for(let f of schema[k].fields){let v=fd.get(f[0]);payload[f[0]]=f[2]==='number'?(v===''?0:Number(v)):(v||null)}try{if(id){await db.collection(k).doc(id).update(payload)}else{payload.created_at=new Date().toISOString();await db.collection(k).add(payload)}$('modal').classList.remove('open');await refreshData()}catch(err){alert('Enregistrement impossible : '+err.message)}};
+async function deleteRecord(k,id){if(!confirm('Supprimer définitivement cet enregistrement ?'))return;try{await db.collection(k).doc(id).delete();await refreshData()}catch(e){alert('Suppression impossible : '+e.message)}}
+async function refreshData(){try{await loadAll();refresh()}catch(e){alert('Erreur de synchronisation Firebase : '+e.message)}}
 $('cancel').onclick=()=>$('modal').classList.remove('open');
-$('logout').onclick=async()=>{await sb.auth.signOut();location.reload()};
-
-// Demande de réinitialisation : le lien revient sur le vrai site GitHub Pages.
-$('forgot').onclick=async()=>{
-  const email=$('email').value.trim();
-  if(!email){$('loginMsg').textContent='Saisissez votre adresse e-mail.';return}
-  $('forgot').disabled=true;$('loginMsg').textContent='Envoi de la demande…';
-  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:APP_URL});
-  $('forgot').disabled=false;
-  $('loginMsg').textContent=error?'Erreur : '+error.message:'Demande envoyée. Consultez votre boîte e-mail et ouvrez le lien depuis le même navigateur.';
-};
-
-// Affiche le formulaire de nouveau mot de passe lorsque Supabase ouvre une session de récupération.
-function showResetForm(){
-  $('resetPanel').hidden=false;
-  $('loginForm').hidden=true;
-  $('forgot').hidden=true;
-  $('loginMsg').textContent='Lien de réinitialisation reconnu. Choisissez votre nouveau mot de passe.';
-}
-sb.auth.onAuthStateChange((event,session)=>{
-  if(event==='PASSWORD_RECOVERY') showResetForm();
-});
-
-// Enregistre le nouveau mot de passe dans Supabase.
-$('resetForm').onsubmit=async e=>{
-  e.preventDefault();
-  const password=$('newPassword').value;
-  const confirmation=$('confirmPassword').value;
-  if(password.length<8){$('loginMsg').textContent='Le mot de passe doit contenir au moins 8 caractères.';return}
-  if(password!==confirmation){$('loginMsg').textContent='Les deux mots de passe ne correspondent pas.';return}
-  $('resetBtn').disabled=true;$('loginMsg').textContent='Enregistrement du nouveau mot de passe…';
-  const {error}=await sb.auth.updateUser({password});
-  $('resetBtn').disabled=false;
-  if(error){$('loginMsg').textContent='Erreur : '+error.message;return}
-  await sb.auth.signOut();
-  $('resetPanel').hidden=true;$('loginForm').hidden=false;$('forgot').hidden=false;
-  $('password').value='';
-  $('loginMsg').textContent='Mot de passe modifié avec succès. Connectez-vous avec votre nouveau mot de passe.';
-};
-
-// Connexion administrateur et reprise de session.
-$('loginForm').onsubmit=async e=>{
-  e.preventDefault();$('loginBtn').disabled=true;$('loginMsg').textContent='Connexion…';
-  const {data,error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
-  $('loginBtn').disabled=false;
-  if(error){$('loginMsg').textContent='Connexion refusée : '+error.message;return}
-  if(data.user.email?.toLowerCase()!==ADMIN_EMAIL){await sb.auth.signOut();$('loginMsg').textContent='Accès réservé au compte administrateur.';return}
-  try{await loadAll();showApp(data.user)}catch(err){$('loginMsg').textContent='Connecté, mais chargement impossible : '+err.message}
-};
-(async()=>{
-  const {data,error}=await sb.auth.getSession();
-  if(error){$('loginMsg').textContent='Impossible de vérifier la session : '+error.message;return}
-  if(data.session){
-    if(data.session.user.email?.toLowerCase()===ADMIN_EMAIL){
-      // Ne pas afficher l'application tant qu'une récupération de mot de passe est en cours.
-      const hash=window.location.hash||'';
-      if(hash.includes('type=recovery')){showResetForm();return}
-      try{await loadAll();showApp(data.session.user)}catch(e){$('loginMsg').textContent=e.message}
-    }else await sb.auth.signOut()
-  }else if((window.location.hash||'').includes('type=recovery')){
-    $('loginMsg').textContent='Vérification du lien de réinitialisation…';
-  }
-})();
+$('logout').onclick=async()=>{await auth.signOut();location.reload()};
+$('forgot').onclick=async()=>{const email=$('email').value.trim();if(!email){$('loginMsg').textContent='Saisissez votre adresse e-mail.';return}$('forgot').disabled=true;$('loginMsg').textContent='Envoi de la demande…';try{await auth.sendPasswordResetEmail(email,{url:window.location.origin+window.location.pathname});$('loginMsg').textContent='E-mail de réinitialisation envoyé. Consultez votre boîte de réception.'}catch(e){$('loginMsg').textContent='Erreur : '+e.message}$('forgot').disabled=false};
+let resetCode=null;
+$('resetForm').onsubmit=async e=>{e.preventDefault();const pw=$('newPassword').value,confirm=$('confirmPassword').value;if(pw.length<8){$('loginMsg').textContent='Le mot de passe doit contenir au moins 8 caractères.';return}if(pw!==confirm){$('loginMsg').textContent='Les deux mots de passe ne correspondent pas.';return}if(!resetCode){$('loginMsg').textContent='Lien de réinitialisation invalide ou expiré.';return}$('resetBtn').disabled=true;try{await auth.confirmPasswordReset(resetCode,pw);$('loginMsg').textContent='Mot de passe modifié. Vous pouvez vous connecter.';$('resetPanel').hidden=true;$('loginForm').hidden=false;$('forgot').hidden=false;$('password').value=''}catch(err){$('loginMsg').textContent='Erreur : '+err.message}finally{$('resetBtn').disabled=false}};
+$('loginForm').onsubmit=async e=>{e.preventDefault();$('loginBtn').disabled=true;$('loginMsg').textContent='Connexion…';try{const cred=await auth.signInWithEmailAndPassword($('email').value.trim(),$('password').value);if(cred.user.email?.toLowerCase()!==ADMIN_EMAIL){await auth.signOut();$('loginMsg').textContent='Accès réservé au compte administrateur.';return}await loadAll();showApp(cred.user)}catch(err){$('loginMsg').textContent='Connexion refusée : '+err.message}finally{$('loginBtn').disabled=false}};
+(async()=>{try{const params=new URLSearchParams(location.search);if(params.get('mode')==='resetPassword'&&params.get('oobCode')){resetCode=params.get('oobCode');await auth.verifyPasswordResetCode(resetCode);$('resetPanel').hidden=false;$('loginForm').hidden=true;$('forgot').hidden=true;$('loginMsg').textContent='Lien de réinitialisation valide. Choisissez votre nouveau mot de passe.';return}const user=auth.currentUser;if(user){if(user.email?.toLowerCase()===ADMIN_EMAIL){await loadAll();showApp(user)}else await auth.signOut()}}catch(e){$('loginMsg').textContent='Erreur Firebase : '+e.message}})();
 </script></body></html>
